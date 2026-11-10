@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>تحديد موقعي على الخريطة</title>
+
+		<!-- Leaflet CSS -->
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		/>
+
+		<style>
+			:root {
+				--mnCl: #0289f5;
+				--mnClOp: #2196f3c2;
+				--gr: #028679;
+				--section-padding: 60px;
+				--main-durachen: 0.3s;
+			}
+			body {
+				margin: 0;
+				font-family: Arial, sans-serif;
+				background: #f1f5f9;
+				text-align: center;
+			}
+
+			header {
+				background: #2563eb;
+				color: white;
+				padding: 18px;
+			}
+			/* //////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //  */
+			/* dadi code */
+			/*general classes */
+
+			.blck {
+				display: block;
+			}
+
+			.n {
+				display: none;
+			}
+
+			/*end general classes */
+
+			#cntnr {
+				position: relative;
+				background-color: #7473739e;
+				width: 100%;
+				height: 100%;
+				display: none;
+				flex-wrap: wrap;
+				align-content: center;
+				justify-content: center;
+				position: fixed;
+				background-size: cover;
+				cursor: pointer;
+				z-index: 100;
+			}
+
+			.dvPlc {
+				width: 50%;
+				position: relative;
+				z-index: 2;
+				background-color: #fff;
+				border-radius: 7px;
+				overflow-y: visible;
+				border: 3px solid var(--gr);
+				transition: 0.3s;
+				transform: scaleY(0);
+			}
+
+			.opPlc {
+				transform: scaleY(1);
+			}
+
+			.clear {
+				font-size: 5vh;
+				color: #555;
+				float: right;
+				display: flex;
+				flex-wrap: wrap;
+				align-content: center;
+				justify-content: center;
+				position: absolute;
+				margin: 10px 5px 2px;
+				border-radius: 50%;
+				width: 40px;
+				height: 40px;
+				right: 10px;
+				overflow: hidden;
+				cursor: pointer;
+			}
+
+			.clear::before {
+				content: "";
+				position: absolute;
+				left: 0;
+				border-radius: 50%;
+				width: 100%;
+				height: 100%;
+				background-color: #ddd;
+				z-index: -1;
+				opacity: 0;
+				transition: 0.3s;
+			}
+
+			.clear:hover::before {
+				opacity: 1;
+			}
+
+			#autoris,
+			#err {
+				font-size: 25px;
+				display: none;
+				font-weight: 700;
+				padding: 35px;
+			}
+
+			#err {
+				color: #d70000;
+			}
+
+			.okbtn {
+				/* display: block; */
+				color: #fff;
+				width: fit-content;
+				font-size: 4vh;
+				background: var(--mnCl);
+				margin: 2vh auto 3vh;
+				padding: 5px 20px;
+				border: 1px;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			.nofcs:focus {
+				outline: 0;
+			}
+
+			.name {
+				background-color: var(--mnCl);
+				color: #fff;
+				padding: 35px;
+				font-size: 55px;
+				font-weight: 700;
+				margin: 0;
+			}
+
+			.txt {
+				word-wrap: break-word;
+				margin: 20px;
+				font-size: 30px;
+			}
+
+			.rslt {
+				font-size: 25px;
+				word-wrap: break-word;
+				background-color: #eee;
+				margin: 0 0 20px;
+				/* display: none; */
+			}
+
+			.dvrslt {
+				padding: 30px;
+			}
+
+			#isCpd {
+				font-size: 25px;
+				color: var(--gr);
+				font-weight: 700;
+				display: none;
+			}
+			#inpRslt {
+				display: none;
+			}
+			/* //////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //  */
+			/* dadi code */
+			#map {
+				height: 65vh;
+				width: 95%;
+				margin: 15px auto;
+				border-radius: 12px;
+				z-index: 1;
+			}
+
+			.info {
+				background: white;
+				width: 85%;
+				max-width: 500px;
+				margin: 15px auto;
+				padding: 15px;
+				border-radius: 12px;
+				box-shadow: 0 2px 10px #0002;
+			}
+
+			button {
+				background: #2563eb;
+				color: white;
+				border: none;
+				padding: 12px 25px;
+				border-radius: 8px;
+				cursor: pointer;
+				font-size: 16px;
+			}
+
+			button:hover {
+				background: #1d4ed8;
+			}
+
+			#status {
+				color: #475569;
+				margin: 10px;
+			}
+			@media (max-width: 700px) {
+				.dvPlc {
+					width: 90%;
+				}
+
+				.name {
+					font-size: 35px;
+					padding: 25px;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<h2>📍 تحديد موقعي الجغرافي</h2>
+		</header>
+
+		<div id="cntnr" class="hidjs" onclick="hiding()">
+			<div id="divplac" class="dvPlc">
+				<span class="clear" onclick="hiding()">×</span>
+
+				<hr style="margin-top: 55px" />
+
+				<div id="autoris" class="hidjs">
+					قم بالسماح للتطبيق بإستخدام <br />GPS <br />
+					<button id="okautoris" onclick="getLocation()" class="okbtn nofcs">
+						حسنا
+					</button>
+				</div>
+				<div id="err" class="hidjs">
+					جهازك لا يدعم إستخدام <br />GPS <br />
+					<button id="okautori" onclick="hiding()" class="okbtn nofcs">
+						حسنا
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="info">
+			<p id="status">اضغط على الزر لتحديد موقعك</p>
+
+			<p>خط العرض: <span id="lat">---</span></p>
+			<p>خط الطول: <span id="lng">---</span></p>
+
+			<button onclick="opnDiv('autoris')">تحديد موقعي الآن</button>
+            <div id="rslt" class="rslt"></div>
+
+
+		<input type="text" id="inpRslt" name="custId" value="" />
+		</div>
+		
+		<div id="map" ></div>
+
+		<!-- Leaflet JS -->
+		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+		<script>
+			// إنشاء الخريطة
+			const map = L.map("map").setView([28, 3], 5);
+
+			// إضافة خريطة OpenStreetMap
+			L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+				attribution: "&copy; OpenStreetMap",
+			}).addTo(map);
+
+			let marker;
+
+			// تحديد الموقع
+			function getLocation() {
+				hiding();
+				const status = document.getElementById("status");
+
+				if (!navigator.geolocation) {
+					status.textContent = "متصفحك لا يدعم تحديد الموقع";
+					return;
+				}
+
+				status.textContent = "جاري تحديد موقعك...";
+
+				navigator.geolocation.getCurrentPosition(
+					function (position) {
+						const lat = position.coords.latitude;
+						const lng = position.coords.longitude;
+
+						// عرض الإحداثيات
+						document.getElementById("lat").textContent = lat;
+						document.getElementById("lng").textContent = lng;
+
+						// تحريك الخريطة إلى موقعك
+						map.setView([lat, lng], 16);
+
+						// حذف العلامة القديمة
+						if (marker) {
+							map.removeLayer(marker);
+						}
+
+						// إضافة علامة جديدة
+						marker = L.marker([lat, lng]).addTo(map);
+
+						marker.bindPopup("📍 أنت موجود هنا!").openPopup();
+						/*  let lttd = position.coords.latitude, lngtd = position.coords.longitude, scnds = new Date().getTime(), */
+						const lien = "https://www.google.com/maps/place/" + lat + "," + lng;
+						gebi("rslt").innerHTML = `
+                            <div class="dvrslt">موقعك على الخريطة هو <br>
+                            <a id="arslt"  target="_blank" href="${lien}">${lien}</a>
+                            <br> </br>
+							<button  onclick="opnLien('${lien}')" class="okbtn nofcs" >
+								<img src="./open-external-svgrepo-com.svg" alt="open"
+								style="height: 20px;"
+								>
+								فتح 
+                                </button>
+
+                            <button id="okautoris" onclick="copyLien()" class="okbtn nofcs" >نسخ 
+                                </button>
+                            
+                            <div id="isCpd">تم النسخ بنجاح</div>
+                            </div>`;
+						status.textContent = "تم تحديد موقعك بنجاح ✅";
+						gebi("inpRslt").value = lien;
+						
+						
+					},
+
+					function (error) {
+						switch (error.code) {
+							case error.PERMISSION_DENIED:
+								status.textContent = "يرجى السماح بالوصول إلى موقعك";
+								break;
+
+							case error.POSITION_UNAVAILABLE:
+								status.textContent = "الموقع غير متاح";
+								break;
+
+							case error.TIMEOUT:
+								status.textContent = "انتهت مهلة تحديد الموقع";
+								break;
+
+							default:
+								status.textContent = "حدث خطأ أثناء تحديد الموقع";
+						}
+					},
+
+					{
+						enableHighAccuracy: true,
+						timeout: 15000,
+						maximumAge: 0,
+					},
+				);
+			}
+
+			/* //////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    //  */
+			/* dadi code */
+            function opnLien(lien) {
+                window.open(lien, '_blank'); 
+            }
+			gebi("divplac").addEventListener("click", n => {
+				n.stopPropagation();
+			});
+			function hiding() {
+				setTimeout(() => {
+					gebi("divplac").className = "dvPlc";
+				}, 100);
+
+				setTimeout(() => {
+					document.querySelectorAll(".hidjs").forEach(el => {
+						el.style.display = "none";
+					});
+				}, 450);
+			}
+
+			function opnDiv(el) {
+				dsply("cntnr", "flex");
+				setTimeout(() => {
+					gebi("divplac").className += " opPlc";
+				}, 5);
+				dsply(el, "block");
+			}
+
+			function copyLien() {
+				let rslt = gebi("inpRslt");
+				rslt.select();
+				rslt.setSelectionRange(0, 9999);
+				navigator.clipboard.writeText(rslt.value);
+
+				dsply("isCpd", "block");
+				setTimeout(() => {
+					dsply("isCpd", "none");
+				}, 5000);
+			}
+
+			/*///// short function \\\\\*/
+			function dsply(el, dsp) {
+				gebi(el).style.display = dsp;
+			}
+			function gebi(el) {
+				return document.getElementById(el);
+			}
+		</script>
+	</body>
+</html>
