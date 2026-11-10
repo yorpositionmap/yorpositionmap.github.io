@@ -322,8 +322,9 @@
 						marker = L.marker([lat, lng]).addTo(map);
 
 						marker.bindPopup("📍 أنت موجود هنا!").openPopup();
-						/*  let lttd = position.coords.latitude, lngtd = position.coords.longitude, scnds = new Date().getTime(), */
-						const lien = "https://www.google.com/maps/place/" + lat + "," + lng;
+						/*  let lttd = position.coords.latitude, lngtd = position.coords.longitude, scnds = , */
+						const scnds = new Date().getTime()
+						const lien = 'https://www.google.com/maps/place/' + lat + ',' + lng;
 						gebi("rslt").innerHTML = `
                             <div class="dvrslt">موقعك على الخريطة هو <br>
                             <a id="arslt"  target="_blank" href="${lien}">${lien}</a>
